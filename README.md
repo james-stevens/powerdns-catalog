@@ -1,7 +1,7 @@
 # powerdns-catalog
 Python script to maintain a `bind` catalog zone in PowerDNS using the Rest/API
 
-If you are using PowerDNS as your DNS Master, but you wish to use standard Zone Transfers to export your zones, it can be handy to use a feature in `bind` called a Catalog Zone.
+If you are using PowerDNS as your DNS Master, but you wish to use standard Zone Transfers to export your zones, it can be handy to use a feature in `bind` called a (Catalog Zone)[https://kb.isc.org/docs/aa-01401].
 
 If you are using an external DNS provider, or you are transferring your zones over long distances, it may not be possible or practical to use database replication, so zone transfer may be a better option.
 
