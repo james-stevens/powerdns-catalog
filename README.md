@@ -13,6 +13,8 @@ If the catalog zone does not exist, it will be created with suitable settings (M
 
 NOTE: in PowerDNS a catalog zone is just a normal DNS zone, it only becomes special when you tell `bind` to treat it as a `catalog-zone`.
 
+Here's more information about [Catalog Zones](https://blog.thelifeofkenneth.com/2019/09/using-catalog-zones-in-bind-to.html)
+
 
 # Python
 
