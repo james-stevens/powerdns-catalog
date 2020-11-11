@@ -241,7 +241,7 @@ if not args.yes:
         sys.exit(0)
 
 if one_failed:
-    print("\nOne or more of the updates failed")
+    print("\nERROR: One or more of the updates failed")
     sys.exit(1)
 
 if made_a_change:
