@@ -135,6 +135,10 @@ if args.catalog not in have_zones:
 del have_zones[args.catalog]
 
 r = call_api("zones/" + args.catalog).decode("utf8")
+if r is None:
+    print("ERROR: Failed to request catalog zone contents from server")
+    sys.exit(1)
+
 try:
     catalog = json.loads(r)
 except json.JSONDecodeError as exp:
