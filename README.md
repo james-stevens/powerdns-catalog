@@ -70,6 +70,10 @@ Please refer to the PowerDNS documentation about getting their rest/api to work 
 	$ ./catalog.py -s 127.0.0.1 -S -u user -p pass -Y
 
 
+Obviously, becuase this script uses the PowerDNS Rest/API, you do not need to run this script
+on the same server as the one hosting PowerDNS, but you may need to change your PowerDNS
+configuration settings to allow the script to attach directly to the Rest/API from where you are.
+
 
 # How to configure a catalog zone in `bind`
 
