@@ -1,4 +1,5 @@
 #! /usr/bin/python3
+""" Build a `bind` catalog zone in PowerDNS, using its rest/api """
 
 import argparse
 import json
@@ -27,6 +28,9 @@ parser.add_argument("-s",
 parser.add_argument("-u", '--username', help='Username', default="dns")
 parser.add_argument("-p", '--password', help='Password', default="dns")
 parser.add_argument("-k", '--api-key', help='API-Key')
+parser.add_argument("-x",
+                    '--exclude',
+                    help='Zones to exclude from the catalog (comma sep)')
 parser.add_argument("-c",
                     '--catalog',
                     help='The name of your catalog zone',
@@ -37,6 +41,14 @@ headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 if args.api_key is not None:
     headers["X-Api-Key"] = args.api_key
 
+exclude_zones = {}
+if args.exclude is not None:
+    exclude_zones = {
+        ex if ex[-1] == "." else ex + "."
+        for ex in args.exclude.split(",")
+    }
+
+
 def hashname(name):
     """ return {name} FQDN as a catalog hash in text """
     return hashlib.sha1(dns.name.from_text(name).to_wire()).hexdigest()
@@ -45,6 +57,7 @@ def hashname(name):
 def call_api(ending, method="GET", ok_resp=200, send_json=None):
     """ rest/api call to PowerDNS """
 
+    ret = None
     if args.secure:
         url = "https://" + args.server
     else:
@@ -83,23 +96,29 @@ if r is None:
 
 try:
     zones = json.loads(r)
-except JSONDecodeError as exp:
+except json.JSONDecodeError as exp:
     print("ERROR: Zone list returned was not in JSON")
     sys.exit(1)
 
-have_zones = {z["name"]: hashname(z["name"]) for z in zones}
-hash_have_zones = {have_zones[z]: z for z in have_zones}
+have_zones = {
+    z["name"]: hashname(z["name"])
+    for z in zones if z["name"] not in exclude_zones
+}
+hash_have_zones = {
+    have_zones[z]: z
+    for z in have_zones if z not in exclude_zones
+}
 
 if args.catalog not in have_zones:
     print("ERROR: catalog does not exsit")
     sys.exit(1)
 
-del (have_zones[args.catalog])
+del have_zones[args.catalog]
 
 r = call_api("zones/" + args.catalog).decode("utf8")
 try:
     catalog = json.loads(r)
-except JSONDecodeError as exp:
+except json.JSONDecodeError as exp:
     print("ERROR: Catalog Zone returned was not in JSON")
     sys.exit(1)
 
