@@ -42,7 +42,7 @@ parser.add_argument("-x",
                     help='Zones to exclude from the catalog (comma sep)')
 parser.add_argument("-c",
                     '--catalog',
-                    help='The name of your catalog zone',
+                    help='The name of your catalog zone (default=lst.zz)',
                     default="lst.zz.")
 args = parser.parse_args()
 
@@ -56,6 +56,9 @@ if args.exclude is not None:
         ex if ex[-1] == "." else ex + "."
         for ex in args.exclude.split(",")
     }
+
+if args.catalog[-1] != ".":
+    args.catalog = args.catalog + "."
 
 
 def hashname(name):
@@ -128,11 +131,23 @@ def want_zone(zone):
 have_zones = {z["name"]: hashname(z["name"]) for z in zones if want_zone(z)}
 hash_have_zones = {have_zones[z]: z for z in have_zones}
 
-if args.catalog not in have_zones:
-    print("ERROR: catalog does not exsit")
-    sys.exit(1)
+if args.catalog in have_zones:
+    del have_zones[args.catalog]
+else:
+    if not args.yes:
+        print("= NEED: Catalog zone does not exist and `-Y` not specified")
+        sys.exit(2)
 
-del have_zones[args.catalog]
+    ret = call_api(
+        "zones", "POST", 201, {
+            "name": args.catalog,
+            "kind": "Master",
+            "nameservers": ["ns1." + args.catalog],
+            "soa_edit_api": "EPOCH"
+        })
+    if ret is None:
+        print("ERROR: Failed to create catalog zone")
+        sys.exit(1)
 
 r = call_api("zones/" + args.catalog).decode("utf8")
 if r is None:
