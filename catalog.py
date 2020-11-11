@@ -28,6 +28,15 @@ parser.add_argument("-s",
 parser.add_argument("-u", '--username', help='Username', default="dns")
 parser.add_argument("-p", '--password', help='Password', default="dns")
 parser.add_argument("-k", '--api-key', help='API-Key')
+parser.add_argument("-N",
+                    '--include-native',
+                    help='Include zone of `kind`=`Native`',
+                    action="store_true")
+parser.add_argument(
+    "-A",
+    '--all-kinds',
+    help='Include all `kind`s of zone, not just `kind`=`Master`',
+    action="store_true")
 parser.add_argument("-x",
                     '--exclude',
                     help='Zones to exclude from the catalog (comma sep)')
@@ -100,14 +109,24 @@ except json.JSONDecodeError as exp:
     print("ERROR: Zone list returned was not in JSON")
     sys.exit(1)
 
-have_zones = {
-    z["name"]: hashname(z["name"])
-    for z in zones if z["name"] not in exclude_zones
-}
-hash_have_zones = {
-    have_zones[z]: z
-    for z in have_zones if z not in exclude_zones
-}
+
+def want_zone(zone):
+    """ do we want {zone} in the catalog: return boolean """
+
+    if zone["name"] in exclude_zones:
+        return False
+
+    if zone["kind"] == "Native" and args.include_native:
+        return True
+
+    if zone["kind"] != "Master" and not args.all_kinds:
+        return False
+
+    return True
+
+
+have_zones = {z["name"]: hashname(z["name"]) for z in zones if want_zone(z)}
+hash_have_zones = {have_zones[z]: z for z in have_zones}
 
 if args.catalog not in have_zones:
     print("ERROR: catalog does not exsit")
