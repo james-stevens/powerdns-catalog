@@ -53,7 +53,7 @@ if args.api_key is not None:
 exclude_zones = {}
 if args.exclude is not None:
     exclude_zones = {
-        ex if ex[-1] == "." else ex + "."
+        ex.lower() if ex[-1] == "." else ex.lower() + "."
         for ex in args.exclude.split(",")
     }
 
@@ -63,7 +63,7 @@ if args.catalog[-1] != ".":
 
 def hashname(name):
     """ return {name} FQDN as a catalog hash in text """
-    return hashlib.sha1(dns.name.from_text(name).to_wire()).hexdigest()
+    return hashlib.sha1(dns.name.from_text(name).to_wire()).hexdigest().lower()
 
 
 def call_api(ending, method="GET", ok_resp=200, send_json=None):
@@ -128,7 +128,10 @@ def want_zone(zone):
     return True
 
 
-have_zones = {z["name"]: hashname(z["name"]) for z in zones if want_zone(z)}
+have_zones = {
+    z["name"].lower(): hashname(z["name"])
+    for z in zones if want_zone(z)
+}
 hash_have_zones = {have_zones[z]: z for z in have_zones}
 
 if args.catalog in have_zones:
@@ -165,7 +168,7 @@ len_sfx = len(sfx)
 back_sfx = len_sfx * -1
 
 catalog_hash = {
-    c["name"].split(".")[0]: c["records"][0]["content"]
+    c["name"].split(".")[0].lower(): c["records"][0]["content"].lower()
     for c in catalog["rrsets"]
     if (c["name"] != args.catalog and c["type"] == "PTR" and
         len(c["name"]) > len_sfx and c["name"][back_sfx:] == sfx and "records"
