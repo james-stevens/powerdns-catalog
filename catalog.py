@@ -1,4 +1,8 @@
 #! /usr/bin/python3
+#
+# (c) Copyright 2009-2020 JRCS Ltd  - All Rights Reserved
+#
+
 """ Build a `bind` catalog zone in PowerDNS, using its rest/api """
 
 import argparse
