@@ -29,6 +29,7 @@ parser.add_argument("-s",
                     '--server',
                     help='action to request',
                     default="pdnsdev.jrcs.net")
+parser.add_argument("-T", '--testname', help='Test Catalog Name')
 parser.add_argument("-u", '--username', help='Username', default="dns")
 parser.add_argument("-p", '--password', help='Password', default="dns")
 parser.add_argument("-k", '--api-key', help='API-Key')
@@ -68,6 +69,11 @@ if args.catalog[-1] != ".":
 def hashname(name):
     """ return {name} FQDN as a catalog hash in text """
     return hashlib.sha1(dns.name.from_text(name).to_wire()).hexdigest().lower()
+
+if args.testname is not None:
+	hash = hashname(args.testname)
+	print(f"{args.testname} is {hash}")
+	sys.exit(0)
 
 
 def call_api(ending, method="GET", ok_resp=200, send_json=None):
